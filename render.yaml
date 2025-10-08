@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: call-qa-convoso-integrated
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run final_convoso_integrated_app.py --server.port=$PORT --server.address=0.0.0.0
+    plan: starter
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6
+      - key: WHISPER_MODEL_SIZE
+        value: large
+      - key: MAX_CONCURRENT_PROCESSING
+        value: 8
+      - key: CONVOSO_API_TOKEN
+        value: 1d7lf53gyeqjf1ulpsy26tad86ppkzfb
+      - key: ENABLE_CONVOSO_INTEGRATION
+        value: true
+      - key: CONVOSO_TIMEOUT
+        value: 30
+      - key: OPENAI_API_KEY
+        value: sk-your-openai-api-key-here
+      - key: FTP_USERNAME
+        value: callqa_user
+      - key: FTP_PASSWORD
+        value: secure_password_2025
+      - key: CALL_RETENTION_HOURS
+        value: 24
+      - key: DATA_RETENTION_DAYS
+        value: 365
+      - key: GOOGLE_ADS_API_KEY
+        value: your-google-ads-api-key
+      - key: FACEBOOK_ADS_API_KEY
+        value: your-facebook-ads-api-key
+      - key: BING_ADS_API_KEY
+        value: your-bing-ads-api-key
