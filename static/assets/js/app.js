@@ -99,17 +99,17 @@ class CallQADashboard {
     }
 
     setupTabNavigation() {
-        const navTabs = document.querySelectorAll('.nav-tab');
+        const navItems = document.querySelectorAll('.sidebar-nav-item');
         const tabContents = document.querySelectorAll('.tab-content');
 
-        navTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const targetTab = tab.dataset.tab;
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetTab = item.dataset.tab;
 
-                navTabs.forEach(t => t.classList.remove('active'));
+                navItems.forEach(i => i.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
 
-                tab.classList.add('active');
+                item.classList.add('active');
                 const targetContent = document.getElementById(`${targetTab}-tab`);
                 if (targetContent) {
                     targetContent.classList.add('active');
@@ -126,20 +126,29 @@ class CallQADashboard {
             fetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
             fetchBtn.disabled = true;
 
+            const campaignFilter = document.getElementById('campaign-filter')?.value || '';
+            const agentFilter = document.getElementById('agent-filter')?.value || '';
+            const statusFilter = document.getElementById('status-filter')?.value || '';
+            const calltypeFilter = document.getElementById('calltype-filter')?.value || '';
+
             const response = await this.makeConvosoRequest('/log/retrieve', {
                 limit: 100,
                 start_time: this.getDateString(-30),
-                end_time: this.getDateString(0)
+                end_time: this.getDateString(0),
+                campaign_filter: campaignFilter,
+                agent_filter: agentFilter,
+                status_filter: statusFilter,
+                calltype_filter: calltypeFilter
             });
 
             if (response && response.calls) {
-                this.data.calls = response.calls.map(call => ({
-                    ...call,
-                    processing_status: call.processing_status || 'pending'
-                }));
+                this.data.calls = response.calls;
                 this.data.filteredCalls = [...this.data.calls];
-                this.extractFiltersData();
-                this.populateFilters();
+                
+                if (response.filters) {
+                    this.updateFilterDropdowns(response.filters);
+                }
+                
                 this.renderCallsTable();
             }
         } catch (error) {
@@ -151,49 +160,43 @@ class CallQADashboard {
         }
     }
 
-    extractFiltersData() {
-        const campaigns = new Set();
-        const agents = new Set();
-        
-        this.data.calls.forEach(call => {
-            if (call.campaign) campaigns.add(call.campaign);
-            if (call.agent) agents.add(call.agent);
-        });
-        
-        this.data.campaigns = Array.from(campaigns);
-        this.data.agents = Array.from(agents);
-    }
-
-    populateFilters() {
+    updateFilterDropdowns(filters) {
         const campaignFilter = document.getElementById('campaign-filter');
         const agentFilter = document.getElementById('agent-filter');
+        const statusFilter = document.getElementById('status-filter');
+        const calltypeFilter = document.getElementById('calltype-filter');
         
-        if (campaignFilter) {
+        if (campaignFilter && filters.campaigns) {
+            const currentValue = campaignFilter.value;
             campaignFilter.innerHTML = '<option value="">All Campaigns</option>' +
-                this.data.campaigns.map(c => `<option value="${c}">${c}</option>`).join('');
+                filters.campaigns.map(c => `<option value="${c}">${c}</option>`).join('');
+            campaignFilter.value = currentValue;
         }
         
-        if (agentFilter) {
+        if (agentFilter && filters.agents) {
+            const currentValue = agentFilter.value;
             agentFilter.innerHTML = '<option value="">All Agents</option>' +
-                this.data.agents.map(a => `<option value="${a}">${a}</option>`).join('');
+                filters.agents.map(a => `<option value="${a}">${a}</option>`).join('');
+            agentFilter.value = currentValue;
+        }
+        
+        if (statusFilter && filters.statuses) {
+            const currentValue = statusFilter.value;
+            statusFilter.innerHTML = '<option value="">All Status</option>' +
+                filters.statuses.map(s => `<option value="${s}">${s}</option>`).join('');
+            statusFilter.value = currentValue;
+        }
+        
+        if (calltypeFilter && filters.calltypes) {
+            const currentValue = calltypeFilter.value;
+            calltypeFilter.innerHTML = '<option value="">All Types</option>' +
+                filters.calltypes.map(t => `<option value="${t}">${t}</option>`).join('');
+            calltypeFilter.value = currentValue;
         }
     }
 
     applyFilters() {
-        this.filters.campaign = document.getElementById('campaign-filter')?.value || '';
-        this.filters.agent = document.getElementById('agent-filter')?.value || '';
-        this.filters.status = document.getElementById('status-filter')?.value || '';
-        this.filters.callType = document.getElementById('calltype-filter')?.value || '';
-
-        this.data.filteredCalls = this.data.calls.filter(call => {
-            if (this.filters.campaign && call.campaign !== this.filters.campaign) return false;
-            if (this.filters.agent && call.agent !== this.filters.agent) return false;
-            if (this.filters.status && call.processing_status !== this.filters.status) return false;
-            if (this.filters.callType && call.call_type !== this.filters.callType) return false;
-            return true;
-        });
-
-        this.renderCallsTable();
+        this.fetchCallLogs();
     }
 
     renderCallsTable() {
@@ -201,18 +204,17 @@ class CallQADashboard {
         if (!tbody) return;
 
         if (this.data.filteredCalls.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="no-data">No calls match the selected filters.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="no-data">No calls match the selected filters.</td></tr>';
             return;
         }
 
         tbody.innerHTML = this.data.filteredCalls.map(call => `
             <tr>
                 <td><input type="checkbox" class="call-checkbox" data-call-id="${call.call_id}"></td>
-                <td>${call.call_id}</td>
                 <td>${call.lead_id || 'N/A'}</td>
                 <td>${call.agent || 'Unknown'}</td>
-                <td>${call.campaign || 'N/A'}</td>
-                <td><span class="status-badge">${call.status || 'N/A'}</span></td>
+                <td><span class="status-badge">${call.status_name || call.status || 'N/A'}</span></td>
+                <td>${call.customer_name || 'N/A'}</td>
                 <td>${this.formatDuration(call.duration)}</td>
                 <td>${this.formatDateTime(call.datetime)}</td>
                 <td><span class="status-badge status-${call.processing_status}">${call.processing_status}</span></td>
