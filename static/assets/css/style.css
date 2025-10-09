@@ -583,6 +583,69 @@ body {
     background: #95A5A6;
 }
 
+/* Sidebar Navigation */
+.sidebar-nav {
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #3c4557;
+}
+
+.sidebar-nav-item {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: #a0a9c0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+    border-radius: 8px;
+}
+
+.sidebar-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.sidebar-nav-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+}
+
+.sidebar-nav-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-nav-item span {
+    flex: 1;
+}
+
+.content-header {
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #E9ECEF;
+}
+
+.dashboard-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2C3E50;
+    margin: 0;
+}
+
+/* Hide old top nav styles */
+.top-nav {
+    display: none;
+}
+
 /* Call Logs Page Styles */
 .calls-header {
     display: flex;

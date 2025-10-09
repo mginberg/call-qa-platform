@@ -123,6 +123,11 @@ def get_call_logs():
         data = request.json
         url = f"{CONVOSO_API_BASE_URL}/log/retrieve"
         
+        campaign_filter = data.get('campaign_filter', '')
+        agent_filter = data.get('agent_filter', '')
+        status_filter = data.get('status_filter', '')
+        calltype_filter = data.get('calltype_filter', '')
+        
         params = {
             'auth_token': CONVOSO_API_TOKEN,
             'limit': data.get('limit', 100),
@@ -143,6 +148,18 @@ def get_call_logs():
             
             data_obj = convoso_data.get('data', {})
             calls_data = data_obj.get('results', []) if isinstance(data_obj, dict) else []
+            
+            calls_data = [call for call in calls_data 
+                         if call.get('user') not in ['System User', 'System DID User']]
+            
+            if campaign_filter:
+                calls_data = [call for call in calls_data if call.get('campaign') == campaign_filter]
+            if agent_filter:
+                calls_data = [call for call in calls_data if call.get('user') == agent_filter]
+            if status_filter:
+                calls_data = [call for call in calls_data if call.get('status_name') == status_filter]
+            if calltype_filter:
+                calls_data = [call for call in calls_data if call.get('call_type') == calltype_filter]
             
             if calls_data:
                 with get_db() as conn:
@@ -173,14 +190,23 @@ def get_call_logs():
             else:
                 logger.warning("No call data found in Convoso API response")
             
+            all_calls_for_filters = [call for call in (data_obj.get('results', []) if isinstance(data_obj, dict) else [])
+                                     if call.get('user') not in ['System User', 'System DID User']]
+            
             transformed_calls = []
             for call in calls_data:
+                first_name = call.get('first_name', '')
+                last_name = call.get('last_name', '')
+                customer_name = f"{first_name} {last_name}".strip() or 'N/A'
+                
                 transformed_calls.append({
                     'call_id': call.get('id'),
                     'lead_id': call.get('lead_id'),
                     'agent': call.get('user'),
                     'campaign': call.get('campaign'),
                     'status': call.get('status'),
+                    'status_name': call.get('status_name'),
+                    'customer_name': customer_name,
                     'duration': call.get('call_length'),
                     'datetime': call.get('call_date'),
                     'call_type': call.get('call_type'),
@@ -189,7 +215,22 @@ def get_call_logs():
                     'processing_status': 'pending'
                 })
             
-            return jsonify({'calls': transformed_calls, 'success': True, 'count': len(transformed_calls)})
+            unique_campaigns = sorted(list(set(call.get('campaign') for call in all_calls_for_filters if call.get('campaign'))))
+            unique_agents = sorted(list(set(call.get('user') for call in all_calls_for_filters if call.get('user'))))
+            unique_statuses = sorted(list(set(call.get('status_name') for call in all_calls_for_filters if call.get('status_name'))))
+            unique_calltypes = sorted(list(set(call.get('call_type') for call in all_calls_for_filters if call.get('call_type'))))
+            
+            return jsonify({
+                'calls': transformed_calls,
+                'success': True,
+                'count': len(transformed_calls),
+                'filters': {
+                    'campaigns': unique_campaigns,
+                    'agents': unique_agents,
+                    'statuses': unique_statuses,
+                    'calltypes': unique_calltypes
+                }
+            })
         else:
             logger.warning(f"Convoso API returned status {response.status_code}")
             return jsonify({'error': f'API returned status {response.status_code}'}), response.status_code
