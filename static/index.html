@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call QA Intelligence Dashboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <!-- Engagement Score Section -->
+            <div class="engagement-section">
+                <h3 class="section-title">Engagement score</h3>
+                <div class="score-container">
+                    <div class="score-gauge">
+                        <canvas id="engagementGauge" width="100" height="100"></canvas>
+                        <div class="gauge-center">
+                            <span class="score-label">Score</span>
+                            <span class="score-value">65%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Profile Section -->
+            <div class="agent-profile">
+                <div class="profile-avatar">
+                    <div class="avatar-circle">AW</div>
+                </div>
+                <div class="profile-info">
+                    <h4 class="agent-name">Alex Wilson</h4>
+                    <p class="agent-details">2020/09/08 • 3y<br>6:36 AM • Brussels</p>
+                </div>
+
+                <div class="profile-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Full job Title</span>
+                        <span class="detail-value">Senior Call Agent</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Full job Title</span>
+                        <span class="detail-value">Call Center Employee</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Email</span>
+                        <div class="contact-link">
+                            <i class="fas fa-envelope"></i>
+                            <span>alex.wilson@company.com</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Phone</span>
+                        <div class="contact-link">
+                            <i class="fas fa-phone"></i>
+                            <span>3269856696</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Communication options</span>
+                        <span class="detail-value communication-available">Available</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Info Section -->
+            <div class="account-info">
+                <h4 class="section-title">Account info</h4>
+                <div class="account-card">
+                    <div class="company-avatar">
+                        <div class="company-logo">
+                            QA<br>
+                            <small>BUSINESS</small>
+                        </div>
+                    </div>
+                    <div class="company-details">
+                        <h5 class="company-name">Call QA Business</h5>
+                        <p class="company-location">New York, United States<br>6:36 AM</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header Navigation -->
+            <nav class="top-nav">
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-tab="analytics">
+                        <i class="fas fa-chart-line"></i> ANALYTICS
+                    </button>
+                    <button class="nav-tab" data-tab="agent-info">
+                        <i class="fas fa-user"></i> AGENT INFO
+                    </button>
+                    <button class="nav-tab" data-tab="call-reports">
+                        <i class="fas fa-phone"></i> CALL REPORTS
+                    </button>
+                    <button class="nav-tab" data-tab="performance">
+                        <i class="fas fa-trophy"></i> PERFORMANCE
+                    </button>
+                    <button class="nav-tab" data-tab="engagement">
+                        <i class="fas fa-comments"></i> ENGAGEMENT
+                    </button>
+                </div>
+                <div class="nav-actions">
+                    <button class="action-btn">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <!-- Analytics Tab -->
+                <div class="tab-content active" id="analytics-tab">
+                    <!-- Status Alert -->
+                    <div class="status-alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>NPS engagement</span>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="metrics-grid">
+                        <!-- Average QA Score -->
+                        <div class="metric-card purple">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Average QA Score</h3>
+                                <div class="metric-gauge-mini">
+                                    <canvas id="qaScoreGauge" width="50" height="50"></canvas>
+                                    <div class="gauge-text">85</div>
+                                </div>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">85.2</span>
+                                <span class="metric-unit">%</span>
+                            </div>
+                            <div class="metric-change positive">
+                                +2.3% from last month
+                            </div>
+                        </div>
+
+                        <!-- Call Conversion Rate -->
+                        <div class="metric-card teal">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Call Conversion Rate</h3>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">23.7</span>
+                                <span class="metric-unit">%</span>
+                            </div>
+                            <div class="metric-change positive">
+                                +1.2% from last month
+                            </div>
+                        </div>
+
+                        <!-- Total Calls This Month -->
+                        <div class="metric-card orange">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Total Calls This Month</h3>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">847</span>
+                                <span class="metric-unit">calls</span>
+                            </div>
+                            <div class="metric-change positive">
+                                +156 from last month
+                            </div>
+                        </div>
+
+                        <!-- Avg Call Duration -->
+                        <div class="metric-card purple-alt">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Avg Call Duration</h3>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">4.2</span>
+                                <span class="metric-unit">min</span>
+                            </div>
+                            <div class="metric-change negative">
+                                -0.3min from last month
+                            </div>
+                        </div>
+
+                        <!-- Top Disposition -->
+                        <div class="metric-card blue">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Top Disposition</h3>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">SALE</span>
+                                <span class="metric-unit">32%</span>
+                            </div>
+                            <div class="metric-subtitle">
+                                DROP: 45% • AM: 23%
+                            </div>
+                        </div>
+
+                        <!-- Transfer Success Rate -->
+                        <div class="metric-card purple-dark">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Transfer Success Rate</h3>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">78</span>
+                                <span class="metric-unit">%</span>
+                            </div>
+                            <div class="metric-change positive">
+                                +5.2% from last month
+                            </div>
+                        </div>
+
+                        <!-- Flagged Calls -->
+                        <div class="metric-card red">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Flagged Calls</h3>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">23</span>
+                                <span class="metric-unit">calls</span>
+                            </div>
+                            <div class="metric-change positive">
+                                -8 from last month
+                            </div>
+                        </div>
+
+                        <!-- Performance Rank -->
+                        <div class="metric-card blue-dark">
+                            <div class="metric-header">
+                                <h3 class="metric-title">Performance Rank</h3>
+                            </div>
+                            <div class="metric-main">
+                                <span class="metric-number">#3</span>
+                            </div>
+                            <div class="metric-subtitle">
+                                out of 15 agents
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="charts-section">
+                        <!-- Call Volume Trends -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Call Volume Trends</h3>
+                                <div class="chart-actions">
+                                    <select class="chart-select">
+                                        <option>Last 5 Months</option>
+                                        <option>Last 3 Months</option>
+                                        <option>Last Month</option>
+                                    </select>
+                                    <button class="chart-action-btn">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                    <button class="chart-action-btn">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="volumeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Disposition Distribution -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Disposition Distribution</h3>
+                                <div class="chart-actions">
+                                    <button class="chart-action-btn">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                    <button class="chart-action-btn">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="dispositionChart"></canvas>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #2ECC71"></span>
+                                    <span class="legend-label">SALE (32%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #E74C3C"></span>
+                                    <span class="legend-label">DROP (45%)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot" style="background: #F39C12"></span>
+                                    <span class="legend-label">AM (23%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Tabs (Placeholder) -->
+                <div class="tab-content" id="agent-info-tab">
+                    <div class="placeholder-content">
+                        <i class="fas fa-user fa-3x"></i>
+                        <h3>Agent Information</h3>
+                        <p>Detailed agent profiles and performance data.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="call-reports-tab">
+                    <div class="placeholder-content">
+                        <i class="fas fa-phone fa-3x"></i>
+                        <h3>Call Reports</h3>
+                        <p>Comprehensive call analysis and reporting.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="performance-tab">
+                    <div class="placeholder-content">
+                        <i class="fas fa-trophy fa-3x"></i>
+                        <h3>Performance Analytics</h3>
+                        <p>Advanced performance tracking and insights.</p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="engagement-tab">
+                    <div class="placeholder-content">
+                        <i class="fas fa-comments fa-3x"></i>
+                        <h3>Engagement Metrics</h3>
+                        <p>Customer engagement and satisfaction analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
