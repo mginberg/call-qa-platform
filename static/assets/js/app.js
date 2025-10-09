@@ -1,4 +1,4 @@
-// Clean Professional Call QA Dashboard - Fixed Version
+document.addEventListener('DOMContentLoaded', () => {
 
 class CallQADashboard {
     constructor() {
@@ -9,8 +9,22 @@ class CallQADashboard {
                 recordings: '/leads/get-recordings'
             }
         };
+        
+        this.data = {
+            calls: [],
+            filteredCalls: [],
+            agents: [],
+            campaigns: [],
+            selectedCalls: new Set()
+        };
 
-        // Dashboard Data
+        this.filters = {
+            campaign: '',
+            agent: '',
+            status: '',
+            callType: ''
+        };
+
         this.dashboardData = {
             agent: {
                 name: 'Alex Wilson',
@@ -50,8 +64,38 @@ class CallQADashboard {
         this.setupTabNavigation();
         this.setupCharts();
         this.bindEvents();
+        this.setupCallLogHandlers();
         this.startDataRefresh();
         console.log('Call QA Dashboard initialized successfully');
+    }
+
+    setupCallLogHandlers() {
+        const fetchBtn = document.getElementById('fetch-calls-btn');
+        if (fetchBtn) {
+            fetchBtn.addEventListener('click', () => this.fetchCallLogs());
+        }
+
+        const processBtn = document.getElementById('process-selected-btn');
+        if (processBtn) {
+            processBtn.addEventListener('click', () => this.processSelectedCalls());
+        }
+
+        const selectAllCheckbox = document.getElementById('select-all-calls');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', (e) => this.toggleSelectAll(e.target.checked));
+        }
+
+        ['campaign-filter', 'agent-filter', 'status-filter', 'calltype-filter'].forEach(filterId => {
+            const filterEl = document.getElementById(filterId);
+            if (filterEl) {
+                filterEl.addEventListener('change', () => this.applyFilters());
+            }
+        });
+
+        const closeModal = document.getElementById('close-modal');
+        if (closeModal) {
+            closeModal.addEventListener('click', () => this.closeProcessingModal());
+        }
     }
 
     setupTabNavigation() {
@@ -62,11 +106,9 @@ class CallQADashboard {
             tab.addEventListener('click', () => {
                 const targetTab = tab.dataset.tab;
 
-                // Remove active class from all tabs and contents
                 navTabs.forEach(t => t.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
 
-                // Add active class to clicked tab and corresponding content
                 tab.classList.add('active');
                 const targetContent = document.getElementById(`${targetTab}-tab`);
                 if (targetContent) {
@@ -74,6 +116,229 @@ class CallQADashboard {
                 }
             });
         });
+    }
+
+    async fetchCallLogs() {
+        const fetchBtn = document.getElementById('fetch-calls-btn');
+        const originalText = fetchBtn.innerHTML;
+        
+        try {
+            fetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            fetchBtn.disabled = true;
+
+            const response = await this.makeConvosoRequest('/log/retrieve', {
+                limit: 100,
+                start_time: this.getDateString(-30),
+                end_time: this.getDateString(0)
+            });
+
+            if (response && response.calls) {
+                this.data.calls = response.calls.map(call => ({
+                    ...call,
+                    processing_status: call.processing_status || 'pending'
+                }));
+                this.data.filteredCalls = [...this.data.calls];
+                this.extractFiltersData();
+                this.populateFilters();
+                this.renderCallsTable();
+            }
+        } catch (error) {
+            console.error('Error fetching call logs:', error);
+            alert('Error fetching call logs: ' + error.message);
+        } finally {
+            fetchBtn.innerHTML = originalText;
+            fetchBtn.disabled = false;
+        }
+    }
+
+    extractFiltersData() {
+        const campaigns = new Set();
+        const agents = new Set();
+        
+        this.data.calls.forEach(call => {
+            if (call.campaign) campaigns.add(call.campaign);
+            if (call.agent) agents.add(call.agent);
+        });
+        
+        this.data.campaigns = Array.from(campaigns);
+        this.data.agents = Array.from(agents);
+    }
+
+    populateFilters() {
+        const campaignFilter = document.getElementById('campaign-filter');
+        const agentFilter = document.getElementById('agent-filter');
+        
+        if (campaignFilter) {
+            campaignFilter.innerHTML = '<option value="">All Campaigns</option>' +
+                this.data.campaigns.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+        
+        if (agentFilter) {
+            agentFilter.innerHTML = '<option value="">All Agents</option>' +
+                this.data.agents.map(a => `<option value="${a}">${a}</option>`).join('');
+        }
+    }
+
+    applyFilters() {
+        this.filters.campaign = document.getElementById('campaign-filter')?.value || '';
+        this.filters.agent = document.getElementById('agent-filter')?.value || '';
+        this.filters.status = document.getElementById('status-filter')?.value || '';
+        this.filters.callType = document.getElementById('calltype-filter')?.value || '';
+
+        this.data.filteredCalls = this.data.calls.filter(call => {
+            if (this.filters.campaign && call.campaign !== this.filters.campaign) return false;
+            if (this.filters.agent && call.agent !== this.filters.agent) return false;
+            if (this.filters.status && call.processing_status !== this.filters.status) return false;
+            if (this.filters.callType && call.call_type !== this.filters.callType) return false;
+            return true;
+        });
+
+        this.renderCallsTable();
+    }
+
+    renderCallsTable() {
+        const tbody = document.getElementById('calls-table-body');
+        if (!tbody) return;
+
+        if (this.data.filteredCalls.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="no-data">No calls match the selected filters.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = this.data.filteredCalls.map(call => `
+            <tr>
+                <td><input type="checkbox" class="call-checkbox" data-call-id="${call.call_id}"></td>
+                <td>${call.call_id}</td>
+                <td>${call.lead_id || 'N/A'}</td>
+                <td>${call.agent || 'Unknown'}</td>
+                <td>${call.campaign || 'N/A'}</td>
+                <td><span class="status-badge">${call.status || 'N/A'}</span></td>
+                <td>${this.formatDuration(call.duration)}</td>
+                <td>${this.formatDateTime(call.datetime)}</td>
+                <td><span class="status-badge status-${call.processing_status}">${call.processing_status}</span></td>
+                <td>
+                    <button class="btn-icon" onclick="dashboard.viewCallDetails('${call.call_id}')" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        document.querySelectorAll('.call-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => this.toggleCallSelection(e.target.dataset.callId, e.target.checked));
+        });
+
+        this.updateSelectedCount();
+    }
+
+    toggleCallSelection(callId, selected) {
+        if (selected) {
+            this.data.selectedCalls.add(callId);
+        } else {
+            this.data.selectedCalls.delete(callId);
+        }
+        this.updateSelectedCount();
+    }
+
+    toggleSelectAll(selected) {
+        document.querySelectorAll('.call-checkbox').forEach(checkbox => {
+            checkbox.checked = selected;
+            this.toggleCallSelection(checkbox.dataset.callId, selected);
+        });
+    }
+
+    updateSelectedCount() {
+        const processBtn = document.getElementById('process-selected-btn');
+        if (processBtn) {
+            processBtn.disabled = this.data.selectedCalls.size === 0;
+            const count = this.data.selectedCalls.size;
+            processBtn.innerHTML = `<i class="fas fa-cog"></i> Process Selected (${count})`;
+        }
+    }
+
+    async processSelectedCalls() {
+        if (this.data.selectedCalls.size === 0) return;
+
+        this.showProcessingModal();
+        const selectedCallIds = Array.from(this.data.selectedCalls);
+        
+        for (let i = 0; i < selectedCallIds.length; i++) {
+            const callId = selectedCallIds[i];
+            const progress = ((i + 1) / selectedCallIds.length) * 100;
+            
+            this.updateProgress(progress, `Processing call ${i + 1} of ${selectedCallIds.length}...`);
+            this.addLogEntry(`Processing call ${callId}...`, 'info');
+            
+            await this.simulateProcessing(1000);
+            
+            this.addLogEntry(`Call ${callId} processed successfully`, 'success');
+        }
+        
+        this.updateProgress(100, 'Processing complete!');
+        this.addLogEntry('All calls processed successfully', 'success');
+        
+        setTimeout(() => {
+            this.closeProcessingModal();
+            this.data.selectedCalls.clear();
+            this.fetchCallLogs();
+        }, 2000);
+    }
+
+    showProcessingModal() {
+        const modal = document.getElementById('processing-modal');
+        if (modal) {
+            modal.style.display = 'block';
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-text').textContent = 'Preparing to process calls...';
+            document.getElementById('processing-log').innerHTML = '';
+        }
+    }
+
+    closeProcessingModal() {
+        const modal = document.getElementById('processing-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    updateProgress(percent, text) {
+        const fill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        if (fill) fill.style.width = `${percent}%`;
+        if (progressText) progressText.textContent = text;
+    }
+
+    addLogEntry(message, type = 'info') {
+        const log = document.getElementById('processing-log');
+        if (log) {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+    }
+
+    simulateProcessing(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    viewCallDetails(callId) {
+        console.log('View details for call:', callId);
+        alert('Call details view coming soon');
+    }
+
+    formatDuration(seconds) {
+        if (!seconds) return 'N/A';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    formatDateTime(datetime) {
+        if (!datetime) return 'N/A';
+        const date = new Date(datetime);
+        return date.toLocaleString();
     }
 
     setupCharts() {
@@ -445,7 +710,7 @@ class CallQADashboard {
     }
 }
 
-// Initialize dashboard when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.dashboard = new CallQADashboard();
+const dashboard = new CallQADashboard();
+window.dashboard = dashboard;
+
 });

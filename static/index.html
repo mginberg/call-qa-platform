@@ -303,15 +303,79 @@
                     </div>
                 </div>
 
-                <!-- Other Tabs (Placeholder) -->
+                <!-- All Calls Tab -->
                 <div class="tab-content" id="agent-info-tab">
-                    <div class="placeholder-content">
-                        <i class="fas fa-user fa-3x"></i>
-                        <h3>Agent Information</h3>
-                        <p>Detailed agent profiles and performance data.</p>
+                    <div class="calls-header">
+                        <h2>Call Logs</h2>
+                        <div class="calls-actions">
+                            <button class="btn-primary" id="fetch-calls-btn">
+                                <i class="fas fa-sync-alt"></i> Fetch Call Logs
+                            </button>
+                            <button class="btn-secondary" id="process-selected-btn" disabled>
+                                <i class="fas fa-cog"></i> Process Selected
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="filters-section">
+                        <div class="filter-group">
+                            <label>Campaign</label>
+                            <select id="campaign-filter" class="filter-select">
+                                <option value="">All Campaigns</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Agent</label>
+                            <select id="agent-filter" class="filter-select">
+                                <option value="">All Agents</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select id="status-filter" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="completed">Completed</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Call Type</label>
+                            <select id="calltype-filter" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="inbound">Inbound</option>
+                                <option value="outbound">Outbound</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="calls-table-container">
+                        <table class="calls-table" id="calls-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select-all-calls"></th>
+                                    <th>Call ID</th>
+                                    <th>Lead ID</th>
+                                    <th>Agent</th>
+                                    <th>Campaign</th>
+                                    <th>Status</th>
+                                    <th>Duration</th>
+                                    <th>Date/Time</th>
+                                    <th>Processing</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="calls-table-body">
+                                <tr>
+                                    <td colspan="10" class="no-data">No calls loaded. Click "Fetch Call Logs" to load data.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
+                <!-- Call Reports Tab -->
                 <div class="tab-content" id="call-reports-tab">
                     <div class="placeholder-content">
                         <i class="fas fa-phone fa-3x"></i>
@@ -320,6 +384,7 @@
                     </div>
                 </div>
 
+                <!-- Performance Tab -->
                 <div class="tab-content" id="performance-tab">
                     <div class="placeholder-content">
                         <i class="fas fa-trophy fa-3x"></i>
@@ -328,6 +393,7 @@
                     </div>
                 </div>
 
+                <!-- Engagement Tab -->
                 <div class="tab-content" id="engagement-tab">
                     <div class="placeholder-content">
                         <i class="fas fa-comments fa-3x"></i>
@@ -337,6 +403,25 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Processing Modal -->
+    <div id="processing-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Processing Calls</h3>
+                <button class="modal-close" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="processing-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text">Preparing to process calls...</div>
+                </div>
+                <div class="processing-log" id="processing-log"></div>
+            </div>
+        </div>
     </div>
 
     <script src="assets/js/app.js"></script>
