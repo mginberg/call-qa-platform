@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: call-qa-dashboard
+    name: call-qa-convoso-integrated
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
